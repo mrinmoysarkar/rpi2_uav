@@ -5,8 +5,6 @@ from __future__ import print_function
 import rospy
 from std_msgs.msg import String
 import numpy as np
-import cv2
-
 import time
 import os
 import sys
