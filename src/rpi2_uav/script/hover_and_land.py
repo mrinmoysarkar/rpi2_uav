@@ -35,6 +35,31 @@ class simple_uav():
 
         # all publisher
         self.targetPosPub = rospy.Publisher('/'+self.uav_name+'/mavros/setpoint_position/local', PoseStamped, queue_size=100)
+        self.fakePosPub = rospy.Publisher('/'+self.uav_name+'/mavros/mocap/tf', TransformStamped, queue_size=100)
+
+
+    def publishFakePos(self):
+        seq = 0
+        rate = rospy.Rate(60)
+        fakepos = TransformStamped()
+        fakepos.header.frame_id = 'world'
+        fakepos.header.seq = seq
+        fakepos.header.stamp = time.time()
+        fakepos.child_frame_id = ''
+        fakepos.transform.translation.x = 0
+        fakepos.transform.translation.y = 0
+        fakepos.transform.translation.z = 0
+        fakepos.transform.rotation.x = 0
+        fakepos.transform.rotation.y = 0
+        fakepos.transform.rotation.z = 0
+        fakepos.transform.rotation.w = -1
+
+        while not self.stopThread:
+            seq += 1
+            fakepos.header.seq = seq
+            fakepos.header.stamp = time.time()
+            self.fakePosPub.publish(fakepos)
+            rate.sleep()
 
     def state_cb(self, msg):
         self.current_state = msg
@@ -187,6 +212,17 @@ class simple_uav():
 if __name__ == '__main__':
     rospy.init_node('rpi2_test_scenario', anonymous=True)
     uav = simple_uav("rpi2")
+#################
+    threading.Thread(target=uav.publishFakePos).start()
+    while True:
+        rate.sleep()
+        cmd = raw_input("command: \"l\" for land, then \"q\" for exit the main loop: ")
+        if cmd=='l':
+            uav.stopThread = True
+            rospy.sleep(3)
+            break
+###################
+'''
     uav.setTarget(0.92, 4.75, 1.5)
     threading.Thread(target=uav.sendTargetPos).start()
     rospy.sleep(10)
@@ -204,6 +240,6 @@ if __name__ == '__main__':
     else:
         print("failed takeoff!!!")
 
-
+'''
 
         
