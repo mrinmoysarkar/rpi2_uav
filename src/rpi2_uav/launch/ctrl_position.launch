@@ -1,7 +1,7 @@
 <launch>
  
 <arg name="fcu_url" default="/dev/ttyAMA0:921600" />
-<arg name="server" default="192.168.1.12"/>
+<arg name="server" default="10.0.0.12"/>
 
 <arg name="gcs_url" default="" />
 <arg name="tgt_system" default="1" />
@@ -21,13 +21,13 @@
     <param name="conn_timeout" value="5.0" />
     <!-- automatically start mavlink on USB -->
     <param name="startup_px4_usb_quirk" value="true" />
-    <param name="mocap/use_tf" value="true"/>
-    <param name="mocap/use_pose" value="false"/>
+    <param name="mocap/use_tf" value="false"/>
+    <param name="mocap/use_pose" value="true"/>
 </node>
 
 
 
-<!--
+
 <node pkg="vrpn_client_ros" type="vrpn_client_node" name="vrpn_client_node" output="screen">
     <rosparam subst_value="true">
       server: $(arg server)
@@ -46,30 +46,8 @@
       #- FirstTracker
       #- SecondTracker
     </rosparam>
-</node>
--->
-
-<!--
-<node pkg="offbordctrl" name="targetSearch" type="targetSearch.py" output="screen"> 
+    <remap from="/vrpn_client_node/rpi2/pose" to="/rpi2/mavros/mocap/pose"/>
 </node>
 
-
-<node name="setpoint_pub" pkg="offbordctrl" type="setpoint_pub" output="screen">
- 
-</node>
-
-<node pkg="offbordctrl" name="targetSearch" type="targetSearch.py" output="screen"> 
-  
-</node>
-
-
-<node pkg="vicon_bridge" type="vicon_bridge" name="vicon" output="screen">
-    <param name="stream_mode" value="ServerPush" type="str" />
-    <param name="datastream_hostport" value="192.168.1.12:801" type="str" />
-    <param name="tf_ref_frame_id" value="/world" type="str" />
-    <remap from="/vicon/intel1/intel1" to="intel1/mavros/mocap/tf"/>                   
-</node>
- 
--->
  
 </launch>

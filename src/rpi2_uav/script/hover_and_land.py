@@ -44,7 +44,7 @@ class simple_uav():
         fakepos = TransformStamped()
         fakepos.header.frame_id = 'world'
         fakepos.header.seq = seq
-        fakepos.header.stamp = time.time()
+        fakepos.header.stamp = rospy.Time.now()
         fakepos.child_frame_id = ''
         fakepos.transform.translation.x = 0
         fakepos.transform.translation.y = 0
@@ -57,7 +57,7 @@ class simple_uav():
         while not self.stopThread:
             seq += 1
             fakepos.header.seq = seq
-            fakepos.header.stamp = time.time()
+            fakepos.header.stamp = rospy.Time.now()
             self.fakePosPub.publish(fakepos)
             rate.sleep()
 
@@ -211,6 +211,7 @@ class simple_uav():
 
 if __name__ == '__main__':
     rospy.init_node('rpi2_test_scenario', anonymous=True)
+    rate = rospy.Rate(5.0)
     uav = simple_uav("rpi2")
 #################
     threading.Thread(target=uav.publishFakePos).start()
