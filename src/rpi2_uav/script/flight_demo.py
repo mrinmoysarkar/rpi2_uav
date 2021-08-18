@@ -212,18 +212,38 @@ class simple_uav():
             self.set_arm(False, 5)
         except Exception as e:
             print(e)
-                
+
+    def follow_routes(self):
+        path = [(0.6, 7.6, 1.8), (0.6, 4.40, 1.8),(0.6, 2.69, 1.8),(0.92, 1.70, 1.8)]
+        rate = rospy.Rate(5)
+
+        for i,wp in enumerate(path):
+            self.setTargetPos(wp[0], wp[1], wp[2])
+            d = ((wp[0]-self.current_pos[0])**2 + (wp[1]-self.current_pos[1])**2)**0.5
+            while not self.stopThread and d > 0.5:
+                rate.sleep()
+                d = ((wp[0]-self.current_pos[0])**2 + (wp[1]-self.current_pos[1])**2)**0.5
+            if i == 0:
+                rospy.sleep(5)
+
+        print("done following the wps")
+        rospy.sleep(5)
+        self.stopThread = True
+        self.land_and_disarm()
+
 
 if __name__ == '__main__':
     rospy.init_node('rpi2_test_scenario', anonymous=True)
     rate = rospy.Rate(5.0)
     uav = simple_uav("rpi2")
 
-    uav.setTargetPos(0.95, 4.73, 1.5)
+    uav.setTargetPos(1.7, 9.6, 1.8)
     threading.Thread(target=uav.sendTargetPos).start()
     rospy.sleep(10)
     if uav.takeoff():
         print("takeoff success!!!")
+        threading.Thread(target=uav.follow_routes).start()
+
         while not rospy.is_shutdown():
             rate.sleep()
             cmd = raw_input("command: \"l\" for land, then \"q\" for exit the main loop: ")
