@@ -219,7 +219,7 @@ if __name__ == '__main__':
     rate = rospy.Rate(5.0)
     uav = simple_uav("rpi2")
 
-    uav.setTargetPos(0.95, 4.73, 1.5)
+    uav.setTargetPos(0.25, 9.6, 1.8)
     threading.Thread(target=uav.sendTargetPos).start()
     rospy.sleep(10)
     if uav.takeoff():

@@ -24,6 +24,7 @@ class simple_uav():
         self.uav_name = uav_name
         self.current_state = None
         self.current_pos = None
+        self.intel_pos = None
         self.home_pos = None
         self.stopThread = False
         self.targetPos = None
@@ -31,11 +32,18 @@ class simple_uav():
         # all subscriber
         rospy.Subscriber('/'+self.uav_name+'/mavros/state', State, self.state_cb)
         rospy.Subscriber('/'+self.uav_name+'/mavros/local_position/pose', PoseStamped, self.local_position_cb)
+        rospy.Subscriber('/vrpn_client_node/intel1/pose', PoseStamped, self.intelPos_cb)
+        
         # rospy.Subscriber('/vicon/home/home', TransformStamped, self.home_cb)
 
         # all publisher
         self.targetPosPub = rospy.Publisher('/'+self.uav_name+'/mavros/setpoint_position/local', PoseStamped, queue_size=100)
         self.fakePosPub = rospy.Publisher('/'+self.uav_name+'/mavros/mocap/tf', TransformStamped, queue_size=100)
+
+    def intelPos_cb(self, msg):
+        self.intel_pos = [msg.pose.position.x, 
+                            msg.pose.position.y, 
+                            msg.pose.position.z]
 
 
     def publishFakePos(self):
@@ -214,17 +222,21 @@ class simple_uav():
             print(e)
 
     def follow_routes(self):
-        path = [(0.6, 7.6, 1.8), (0.6, 4.40, 1.8),(0.6, 2.69, 1.8),(0.92, 1.70, 1.8)]
+        path = [(0.64, 9.64, 1.5), (0.71, 8.86, 1.5),(0.76, 8.0, 1.5),(0.77, 7.12, 1.5),
+                (0.77, 6.23, 1.5), (0.58, 5.49, 1.5), (0.58, 4.79, 1.5), (0.56, 3.66, 1.5), (0.77, 2.64, 1.5), (0.77, 1.67, 1.5)]
         rate = rospy.Rate(5)
 
         for i,wp in enumerate(path):
             self.setTargetPos(wp[0], wp[1], wp[2])
             d = ((wp[0]-self.current_pos[0])**2 + (wp[1]-self.current_pos[1])**2)**0.5
-            while not self.stopThread and d > 0.5:
+            while not self.stopThread and d > 0.35:
                 rate.sleep()
                 d = ((wp[0]-self.current_pos[0])**2 + (wp[1]-self.current_pos[1])**2)**0.5
-            if i == 0:
-                rospy.sleep(5)
+
+            if self.stopThread == True:
+                self.land_and_disarm()
+            # if i == 0:
+            #     rospy.sleep(2)
 
         print("done following the wps")
         rospy.sleep(5)
@@ -237,7 +249,7 @@ if __name__ == '__main__':
     rate = rospy.Rate(5.0)
     uav = simple_uav("rpi2")
 
-    uav.setTargetPos(1.7, 9.6, 1.8)
+    uav.setTargetPos(0.5, 9.6, 1.5)
     threading.Thread(target=uav.sendTargetPos).start()
     rospy.sleep(10)
     if uav.takeoff():

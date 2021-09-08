@@ -41,7 +41,7 @@
       broadcast_tf: true
 
       # Must either specify refresh frequency > 0.0, or a list of trackers to create
-      refresh_tracker_frequency: 1.0
+      refresh_tracker_frequency: 60.0
       #trackers:
       #- FirstTracker
       #- SecondTracker
